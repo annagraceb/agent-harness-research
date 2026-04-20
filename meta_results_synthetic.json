@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-04-20T12:20Z",
+  "synthetic_data": true,
+  "n_rollouts": 72000,
+  "per_tier_ranges": [
+    {
+      "dimension": "D1_context",
+      "tier": "haiku",
+      "R": 0.08800000000000002
+    },
+    {
+      "dimension": "D1_context",
+      "tier": "opus",
+      "R": 0.26
+    },
+    {
+      "dimension": "D1_context",
+      "tier": "sonnet",
+      "R": 0.18800000000000006
+    },
+    {
+      "dimension": "D3_memory",
+      "tier": "haiku",
+      "R": 0.07
+    },
+    {
+      "dimension": "D3_memory",
+      "tier": "opus",
+      "R": 0.09599999999999997
+    },
+    {
+      "dimension": "D3_memory",
+      "tier": "sonnet",
+      "R": 0.14800000000000002
+    },
+    {
+      "dimension": "D4_verifier",
+      "tier": "haiku",
+      "R": 0.11199999999999999
+    },
+    {
+      "dimension": "D4_verifier",
+      "tier": "opus",
+      "R": 0.08399999999999996
+    },
+    {
+      "dimension": "D4_verifier",
+      "tier": "sonnet",
+      "R": 0.10799999999999998
+    },
+    {
+      "dimension": "D5_budget",
+      "tier": "haiku",
+      "R": 0.033999999999999975
+    },
+    {
+      "dimension": "D5_budget",
+      "tier": "opus",
+      "R": 0.12
+    },
+    {
+      "dimension": "D5_budget",
+      "tier": "sonnet",
+      "R": 0.09999999999999998
+    }
+  ],
+  "shadow_gradients": [
+    {
+      "dimension": "D1_context",
+      "gamma_d": 0.33975109058583197,
+      "intercept": -0.02835499786363355,
+      "R_haiku": 0.08800000000000002,
+      "R_sonnet": 0.18800000000000006,
+      "R_opus": 0.26,
+      "delta_R": 0.172,
+      "shadow_positive": true
+    },
+    {
+      "dimension": "D3_memory",
+      "gamma_d": 0.07691958041503935,
+      "intercept": 0.057797002333769366,
+      "R_haiku": 0.07,
+      "R_sonnet": 0.14800000000000002,
+      "R_opus": 0.09599999999999997,
+      "delta_R": 0.025999999999999968,
+      "shadow_positive": true
+    },
+    {
+      "dimension": "D4_verifier",
+      "gamma_d": -0.05031694846356965,
+      "intercept": 0.13199312726380175,
+      "R_haiku": 0.11199999999999999,
+      "R_sonnet": 0.10799999999999998,
+      "R_opus": 0.08399999999999996,
+      "delta_R": -0.028000000000000025,
+      "shadow_positive": false
+    },
+    {
+      "dimension": "D5_budget",
+      "gamma_d": 0.1763794498434414,
+      "intercept": -0.022807211437936934,
+      "R_haiku": 0.033999999999999975,
+      "R_sonnet": 0.09999999999999998,
+      "R_opus": 0.12,
+      "delta_R": 0.08600000000000002,
+      "shadow_positive": true
+    }
+  ],
+  "m1": {
+    "hypothesis": "M1_general_shadow",
+    "n_positive": 3,
+    "total": 4,
+    "supported": true
+  },
+  "m2": {
+    "hypothesis": "M2_magnitude_invariance",
+    "CV": 1.160254888483561,
+    "mean_delta_R": 0.06399999999999999,
+    "std_delta_R": 0.0742563128629479,
+    "supported": false
+  },
+  "m3": {
+    "hypothesis": "M3_failure_fingerprint",
+    "per_dim": [
+      {
+        "dimension": "D1_context",
+        "observed_mode": "observation_collapse",
+        "predicted_modes": [
+          "context_rot",
+          "observation_collapse"
+        ],
+        "matches": true
+      },
+      {
+        "dimension": "D3_memory",
+        "observed_mode": "memory_pollution",
+        "predicted_modes": [
+          "memory_pollution"
+        ],
+        "matches": true
+      },
+      {
+        "dimension": "D4_verifier",
+        "observed_mode": "rubber_stamp_verification",
+        "predicted_modes": [
+          "rubber_stamp_verification"
+        ],
+        "matches": true
+      },
+      {
+        "dimension": "D5_budget",
+        "observed_mode": "tool_thrash",
+        "predicted_modes": [
+          "budget_myopia",
+          "tool_thrash"
+        ],
+        "matches": true
+      }
+    ],
+    "n_matches": 4,
+    "total": 4,
+    "supported": true
+  }
+}
