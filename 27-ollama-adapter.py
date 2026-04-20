@@ -143,10 +143,8 @@ class OllamaLLM:
         tool_match = re.search(r"<tool>(.*?)</tool>", raw, re.DOTALL)
         args_match = re.search(r"<args>(.*?)</args>", raw, re.DOTALL)
         if tool_match and args_match:
-            try:
-                args = json.loads(args_match.group(1).strip())
-            except json.JSONDecodeError:
-                args = {"raw": args_match.group(1).strip()}
+            raw_args = args_match.group(1).strip()
+            args = OllamaLLM._parse_args_tolerant(raw_args)
             tc = ToolCall(
                 tool=tool_match.group(1).strip(),
                 arguments=args,
@@ -156,6 +154,72 @@ class OllamaLLM:
 
         # No action parsed — treat as terminate with raw as putative diff
         return "terminate", None, raw.strip()[:2000], None, think
+
+    @staticmethod
+    def _parse_args_tolerant(raw_args: str) -> dict[str, Any]:
+        """Parse <args> content with cascading fallbacks:
+          1. Plain json.loads.
+          2. Escape literal newlines inside quoted values.
+          3. Brace-balance: find the first valid balanced {...} substring
+             (handles stray trailing braces the model sometimes emits).
+          4. Return {'raw': raw_args}.
+        """
+        # Fallback 1
+        try:
+            return json.loads(raw_args)
+        except json.JSONDecodeError:
+            pass
+
+        # Fallback 2: escape literal newlines/tabs inside string literals.
+        def escape_in_strings(s: str) -> str:
+            out: list[str] = []
+            in_str = False
+            i = 0
+            while i < len(s):
+                c = s[i]
+                if c == '"' and (i == 0 or s[i - 1] != "\\"):
+                    in_str = not in_str
+                    out.append(c)
+                elif in_str and c == "\n":
+                    out.append("\\n")
+                elif in_str and c == "\r":
+                    out.append("\\r")
+                elif in_str and c == "\t":
+                    out.append("\\t")
+                else:
+                    out.append(c)
+                i += 1
+            return "".join(out)
+
+        escaped = escape_in_strings(raw_args)
+        try:
+            return json.loads(escaped)
+        except json.JSONDecodeError:
+            pass
+
+        # Fallback 3: brace-balance. Find first { and walk to matching }.
+        start = escaped.find("{")
+        if start == -1:
+            return {"raw": raw_args}
+        depth = 0
+        in_str = False
+        for j in range(start, len(escaped)):
+            c = escaped[j]
+            if c == '"' and (j == start or escaped[j - 1] != "\\"):
+                in_str = not in_str
+            if in_str:
+                continue
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = escaped[start : j + 1]
+                    try:
+                        return json.loads(candidate)
+                    except json.JSONDecodeError:
+                        break
+        return {"raw": raw_args}
 
 
 def smoke_test():

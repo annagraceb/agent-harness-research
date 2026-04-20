@@ -355,16 +355,28 @@ class AgentLoop:
     # ----- prompt building -----------------------------------------------
 
     def _build_prompt(self) -> str:
-        """Assemble the agent's prompt from task + tools + plan + context."""
+        """Assemble the agent's prompt from task + tools + plan + context.
+
+        Context ordering: full-text for the most recent 3 observations (so the
+        agent can actually use them), short summaries for the next 7 (so it
+        knows they happened), older dropped entirely.
+        """
+        recent = self.context[-3:]
+        older = self.context[-10:-3] if len(self.context) > 3 else []
         parts: list[str] = [
             f"Task: {self.cfg.task.description}",
             f"Tools available: {list(self.cfg.tools.keys())}",
             f"Current plan:\n{self.plan or '(no plan yet)'}",
-            "Recent observations:",
-            *[f"  - turn {i}: {o.get('summary', '')}" for i, o in enumerate(self.context[-10:])],
             "",
-            "Respond with your next action.",
+            "Prior observations (older, summarized):",
         ]
+        for o in older:
+            parts.append(f"  - turn {o.get('turn')}: {o.get('summary', '')[:200]}")
+        parts.extend(["", "Recent observations (full):"])
+        for o in recent:
+            parts.append(f"  --- turn {o.get('turn')} ---")
+            parts.append(o.get('full', o.get('summary', '')))
+        parts.extend(["", "Respond with your next action."])
         return "\n".join(parts)
 
     # ----- step emission -------------------------------------------------
@@ -430,7 +442,11 @@ class AgentLoop:
                 "call_id": result.call_id, "ok": result.ok,
                 "output": result.output, "truncated": result.truncated,
             })
-            self.context.append({"turn": self._turns, "summary": result.output[:200]})
+            self.context.append({
+                "turn": self._turns,
+                "summary": result.output[:200],
+                "full": result.output[:6000],
+            })
             self._trim_context()
         else:
             termination_reason = "budget_exceeded"
