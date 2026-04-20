@@ -8,3 +8,6 @@ venv/
 .env
 .DS_Store
 logs/
+.codex
+.codex/
+
