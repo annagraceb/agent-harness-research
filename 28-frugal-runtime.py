@@ -339,21 +339,39 @@ class HumanEvalFixOracle:
 
 
 def build_agent_system_prompt(task: HumanEvalFixTask) -> str:
+    """System prompt for the code-repair agent. Kept tight to fit 7B models'
+    attention budget, but includes a worked example because zero-shot format
+    compliance is the dominant failure mode at this scale."""
     return (
-        "You are a coding agent debugging a Python function. Respond ONLY with "
-        "ONE of these tagged forms:\n"
-        "  <plan>short plan</plan>\n"
+        "You are a coding agent debugging a Python function.\n"
+        "\n"
+        "Respond with ONE tagged action per turn. Valid forms:\n"
         "  <tool>read_file</tool><args>{\"path\": \"solution.py\"}</args>\n"
-        "  <tool>edit_file</tool><args>{\"path\": \"solution.py\", \"contents\": \"...full file...\"}</args>\n"
         "  <tool>run_tests</tool><args>{}</args>\n"
-        "  <final>...full file contents of your fixed solution.py...</final>\n"
-        "\nRules:\n"
-        "- The file is solution.py. The function is "
-        f"`{task.entry_point}`.\n"
-        "- Use read_file first to see the current (buggy) code.\n"
-        "- Use run_tests after each edit.\n"
-        "- Emit <final> when tests pass.\n"
-        "- Never explain outside the tags.\n"
+        "  <tool>edit_file</tool><args>{\"path\": \"solution.py\", \"contents\": \"<full file>\"}</args>\n"
+        "  <final>done</final>\n"
+        "\n"
+        "REQUIRED PROTOCOL:\n"
+        "  Turn 1: read_file to see the buggy code.\n"
+        "  Turn 2: run_tests to see the failing tests.\n"
+        "  Turn 3+: edit_file with the FULL corrected file (declaration + fixed body).\n"
+        "  Next:   run_tests again. If tests PASSED, emit <final>done</final>.\n"
+        "          If tests FAILED, edit_file again with a new fix.\n"
+        "\n"
+        "STRICT RULES:\n"
+        f"  * The file is always solution.py. The function is `{task.entry_point}`.\n"
+        "  * Call read_file at most ONCE. You already have the contents after that.\n"
+        "  * After every edit_file, the very next action MUST be run_tests.\n"
+        "  * edit_file 'contents' must be the COMPLETE file including imports.\n"
+        "  * NEVER emit <final> before run_tests has returned tests_passed=True.\n"
+        "  * No explanation text outside the tags. Emit ONLY a tagged action.\n"
+        "\n"
+        "EXAMPLE flow (for a different task):\n"
+        "  Turn 1: <tool>read_file</tool><args>{\"path\": \"solution.py\"}</args>\n"
+        "  Turn 2: <tool>run_tests</tool><args>{}</args>\n"
+        "  Turn 3: <tool>edit_file</tool><args>{\"path\": \"solution.py\", \"contents\": \"from typing import List\\n\\ndef foo(x: int) -> int:\\n    return x + 1\\n\"}</args>\n"
+        "  Turn 4: <tool>run_tests</tool><args>{}</args>\n"
+        "  Turn 5: <final>done</final>\n"
     )
 
 
