@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 RNG = np.random.default_rng(20260420)
-OUT_DIR = Path("/home/cisco/agent-harness-research")
+OUT_DIR = Path(__file__).resolve().parent
 
 
 # -----------------------------------------------------------------------------
