@@ -1,11 +1,28 @@
 # Agent Harness Research — Working Directory
 
-A pre-registered research program studying **what matters in agent harnesses**
-— the scaffolding around LLMs that manages tools, context, memory, verification,
+A research program studying **what matters in agent harnesses** — the
+scaffolding around LLMs that manages tools, context, memory, verification,
 budget, permissions, and recovery.
 
-**Status (2026-04-20):** Pre-registration complete. 22 artifacts produced during
-an 8-hour autonomous research iteration. No primary data collected yet.
+> ## ⚠ Read this first: [POSTMORTEM.md](POSTMORTEM.md)
+>
+> An adversarial review round (three independent critics, 2026-04-20)
+> flagged four structural problems with the original framing: a
+> weakly-falsifiable headline claim, forking-path hypothesis ladder, a
+> frugal execution path that can't test the headline claim, and
+> standard-practice-labeled-as-novel-contribution. **The postmortem is
+> the correct current read of the program.** The older documents in
+> this directory (14-handoff-summary.md, 23-executive-summary.md) are
+> kept for transparency but reflect the pre-critic framing.
+>
+> The generalized learnings and diagnostic questions are in the
+> companion repo: [annagraceb/learnings](https://github.com/annagraceb/learnings).
+
+**Status (2026-04-20, post-critic round):** Infrastructure and
+single-tier baseline data are real and usable. The original
+"scaffolding shadow" headline claim has been retracted — it cannot be
+tested at the available budget. Publishable pieces have been re-scoped;
+see POSTMORTEM.md.
 
 ---
 
